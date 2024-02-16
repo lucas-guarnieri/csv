@@ -23,9 +23,16 @@ defmodule Csv do
 
   @spec parse(binary()) :: {:ok, [map()]} | {:error, String.t()}
   def parse(_file) do
-    _file
+    rawData = _file
     |> File.stream!()
     |> Enum.map(&String.trim/1)
+
+    mapColumnNames = rawData
+    |> Enum.fetch!(0)
+    |> String.split(",")
+    |> Enum.with_index()
+    |> Map.new(fn {val, num} -> {num, val} end)
+
   end
 
 end
