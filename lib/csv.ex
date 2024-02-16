@@ -23,6 +23,9 @@ defmodule Csv do
 
   @spec parse(binary()) :: {:ok, [map()]} | {:error, String.t()}
   def parse(_file) do
-    raise "Not implemented"
+    _file
+    |> File.stream!()
+    |> Enum.map(&String.trim/1)
   end
+
 end
