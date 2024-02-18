@@ -23,11 +23,14 @@ defmodule Csv do
 
   @spec parse(binary()) :: {:ok, [map()]} | {:error, String.t()}
   def parse(_file) do
+
+    #transform file data into a list of lists
     rawData = _file
     |> File.stream!()
     |> Enum.map(&String.trim/1)
     |> Enum.map(&String.split(&1, ","))
 
+    #maps the names of the columns
     mapColumnNames = rawData
     |> Enum.fetch!(0)
     |> Enum.with_index()
