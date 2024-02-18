@@ -24,11 +24,24 @@ defmodule Csv do
   @spec parse(binary()) :: {:ok, [map()]} | {:error, String.t()}
   def parse(_file) do
 
+    #check if file exits and if its empty
+    case File.stat(_file) do
+      {:ok, %{:size => size}} ->
+        if size == 0 do
+          raise "File is empty"
+        end
+      {:error, _} ->
+        raise "File not found"
+    end
+
     #transform file data into a list of lists
     rawData = _file
     |> File.stream!()
     |> Enum.map(&String.trim/1)
     |> Enum.map(&String.split(&1, ","))
+
+    #check if all lines have the same length
+    Enum.all?(rawData, fn sublist -> length(sublist) == length(Enum.at(rawData, 0)) end) || raise "Invalid CSV"
 
     #maps the names of the columns
     mapColumnNames = rawData
