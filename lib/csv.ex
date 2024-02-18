@@ -26,12 +26,13 @@ defmodule Csv do
     rawData = _file
     |> File.stream!()
     |> Enum.map(&String.trim/1)
+    |> Enum.map(&String.split(&1, ","))
 
     mapColumnNames = rawData
     |> Enum.fetch!(0)
-    |> String.split(",")
     |> Enum.with_index()
     |> Map.new(fn {val, num} -> {num, val} end)
+
 
   end
 
