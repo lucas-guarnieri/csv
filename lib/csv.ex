@@ -41,15 +41,18 @@ defmodule Csv do
     |> Enum.map(&String.split(&1, ","))
 
     #check if all lines have the same length
-    Enum.all?(rawData, fn sublist -> length(sublist) == length(Enum.at(rawData, 0)) end) || raise "Invalid CSV"
+    Enum.all?(rawData, fn rows -> length(rows) == length(Enum.at(rawData, 0)) end) || raise "Invalid CSV"
 
-    #maps the names of the columns
-    mapColumnNames = rawData
-    |> Enum.fetch!(0)
-    |> Enum.with_index()
-    |> Map.new(fn {val, num} -> {num, val} end)
+    #separetes data into header
+    mapColumnNames = rawData |> Enum.fetch!(0)
+    mapDataValues = rawData |> Enum.drop(1)
 
-
+    #creates maps where keys are mapColumnNames elements and values are mapDataValues elements
+    mapSeedData = Enum.map(mapDataValues, fn rowData ->
+      Enum.zip(mapColumnNames, rowData)
+      |> Enum.into(%{})
+    end)
+    {:ok, mapSeedData}
   end
 
 end
