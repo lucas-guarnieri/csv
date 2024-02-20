@@ -22,37 +22,60 @@ defmodule Csv do
   """
 
   @spec parse(binary()) :: {:ok, [map()]} | {:error, String.t()}
-  def parse(_file) do
+  def parse(pathFile) do
 
-    #check if file exits and if its empty
-    case File.stat(_file) do
-      {:ok, %{:size => size}} ->
-        if size == 0 do
-          raise "File is empty"
+    case checkFile(pathFile) do
+      {:ok, _} ->
+        case readAndSeedData(pathFile) do
+          {:ok, csvData} ->
+            {:ok, csvData}
+          {:error, reason} ->
+            {:error, reason}
+        end
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  #checks for file existence and if its empty
+  defp checkFile(pathFile) do
+    case File.stat(pathFile) do
+      {:ok, %{size: size}} when size == 0 ->
+        {:error, "File is empty"}
+      {:ok, _} ->
+        {:ok, "Ok"}
+      {:error, _} ->
+        {:error, "File not found"}
+    end
+  end
+
+  #reads and parses the data into required structure if data complies with the requirements
+  defp readAndSeedData(pathFile) do
+    case File.read(pathFile) do
+      {:ok, fileData} ->
+
+        rawData =
+          fileData
+          |> String.split("\n")
+          |> Enum.map(&String.trim/1)
+          |> Enum.map(&String.split(&1, ","))
+
+        if Enum.all?(rawData, fn rows -> length(rows) == length(Enum.at(rawData, 0)) end) do
+          columnNames = List.first(rawData)
+          columnValues = List.delete_at(rawData, 0)
+          seededData =
+            Enum.map(columnValues, fn rowData ->
+              Enum.zip(columnNames, rowData) |> Enum.into(%{})
+            end)
+
+          {:ok, seededData}
+        else
+          {:error, "Invalid CSV"}
         end
       {:error, _} ->
-        raise "File not found"
+        {:error, "Failed to read file"}
     end
 
-    #transform file data into a list of lists
-    rawData = _file
-    |> File.stream!()
-    |> Enum.map(&String.trim/1)
-    |> Enum.map(&String.split(&1, ","))
-
-    #check if all lines have the same length
-    Enum.all?(rawData, fn rows -> length(rows) == length(Enum.at(rawData, 0)) end) || raise "Invalid CSV"
-
-    #separetes data into header
-    mapColumnNames = rawData |> Enum.fetch!(0)
-    mapDataValues = rawData |> Enum.drop(1)
-
-    #creates maps where keys are mapColumnNames elements and values are mapDataValues elements
-    mapSeedData = Enum.map(mapDataValues, fn rowData ->
-      Enum.zip(mapColumnNames, rowData)
-      |> Enum.into(%{})
-    end)
-    {:ok, mapSeedData}
   end
 
 end
