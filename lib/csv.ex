@@ -22,7 +22,6 @@ defmodule Csv do
   """
   @spec parse(binary()) :: {:ok, [map()]} | {:error, String.t()}
   def parse(pathFile) do
-
     case checkFile(pathFile) do
       {:ok, _} ->
         case readAndSeedData(pathFile) do
