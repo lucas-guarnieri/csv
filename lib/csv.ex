@@ -20,7 +20,6 @@ defmodule Csv do
 
   Você pode assumir que o valor das colunas não contém nenhuma vírgula.
   """
-
   @spec parse(binary()) :: {:ok, [map()]} | {:error, String.t()}
   def parse(pathFile) do
 
@@ -53,14 +52,12 @@ defmodule Csv do
   defp readAndSeedData(pathFile) do
     case File.read(pathFile) do
       {:ok, fileData} ->
-
         parsedData =
           fileData
           |> String.split("\n")
           |> Enum.map(&String.trim/1)
           |> Enum.map(&String.split(&1, ","))
-
-        case validCSVData(parsedData) do
+        case validCsvData(parsedData) do
           {:ok, data} ->
             columnNames = List.first(data)
             columnValues = List.delete_at(data, 0)
@@ -75,10 +72,10 @@ defmodule Csv do
       {:error, _} ->
         {:error, "Failed to read file"}
     end
-
   end
 
-  defp validCSVData(data) do
+  #analises parsed data to guarantee every row have the same number of columns
+  defp validCsvData(data) do
     if Enum.all?(data, fn rows -> length(rows) == length(Enum.at(data, 0)) end) do
       {:ok, data}
     else
