@@ -49,33 +49,41 @@ defmodule Csv do
     end
   end
 
-  #reads and parses the data into required structure if data complies with the requirements
+  #reads, parses and maps the data into required structure if data complies with the requirements
   defp readAndSeedData(pathFile) do
     case File.read(pathFile) do
       {:ok, fileData} ->
 
-        rawData =
+        parsedData =
           fileData
           |> String.split("\n")
           |> Enum.map(&String.trim/1)
           |> Enum.map(&String.split(&1, ","))
 
-        if Enum.all?(rawData, fn rows -> length(rows) == length(Enum.at(rawData, 0)) end) do
-          columnNames = List.first(rawData)
-          columnValues = List.delete_at(rawData, 0)
-          seededData =
-            Enum.map(columnValues, fn rowData ->
+        case validCSVData(parsedData) do
+          {:ok, data} ->
+            columnNames = List.first(data)
+            columnValues = List.delete_at(data, 0)
+            seededData =
+              Enum.map(columnValues, fn rowData ->
               Enum.zip(columnNames, rowData) |> Enum.into(%{})
-            end)
-
-          {:ok, seededData}
-        else
-          {:error, "Invalid CSV"}
+              end)
+            {:ok, seededData}
+          {:error, reason} ->
+            {:error, reason}
         end
       {:error, _} ->
         {:error, "Failed to read file"}
     end
 
+  end
+
+  defp validCSVData(data) do
+    if Enum.all?(data, fn rows -> length(rows) == length(Enum.at(data, 0)) end) do
+      {:ok, data}
+    else
+      {:error, "Invalid CSV"}
+    end
   end
 
 end
