@@ -24,7 +24,7 @@ defmodule Csv do
   def parse(pathFile) do
     case checkFile(pathFile) do
       {:ok, _} ->
-        case readAndSeedData(pathFile) do
+        case seedData(pathFile) do
           {:ok, csvData} ->
             {:ok, csvData}
           {:error, reason} ->
@@ -48,7 +48,7 @@ defmodule Csv do
   end
 
   #reads, parses and maps the data into required structure if data complies with the requirements
-  defp readAndSeedData(pathFile) do
+  defp seedData(pathFile) do
     case File.read(pathFile) do
       {:ok, fileData} ->
         parsedData =
